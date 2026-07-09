@@ -11,11 +11,11 @@ import {
 import { getTelemetryHistory } from '../api/telemetryApi'
 import DataTable from '../components/DataTable'
 import SectionCard from '../components/SectionCard'
-import { formatDate, readValue, toArray } from '../utils/collections'
+import { formatDate, toArray } from '../utils/collections'
 import { getApiErrorMessage } from '../utils/apiResponse'
 
 function formatTime(value) {
-  return value ? new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--'
+  return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
 function History() {
@@ -47,34 +47,33 @@ function History() {
     }
   }, [])
 
-  const chartData = history.map((item) => {
-    const createdAt = readValue(item, ['createdAt', 'created_at', 'timestamp'], '')
-    return {
-      time: formatTime(createdAt),
-      humedad: Number(readValue(item, ['soilMoisture', 'soil_moisture', 'soil_humidity'], 0)),
-    }
-  })
+  const chartData = history
+    .filter((item) => item.createdAt && item.soilMoisture != null)
+    .map((item) => ({
+      time: formatTime(item.createdAt),
+      humedad: Number(item.soilMoisture),
+    }))
 
   const columns = [
     {
       key: 'createdAt',
       label: 'Fecha',
-      render: (row) => formatDate(readValue(row, ['createdAt', 'created_at', 'timestamp'], '')),
+      render: (row) => formatDate(row.createdAt),
     },
     {
       key: 'soilMoisture',
       label: 'Humedad suelo',
-      render: (row) => `${readValue(row, ['soilMoisture', 'soil_moisture', 'soil_humidity'])}%`,
+      render: (row) => row.soilMoisture != null ? `${row.soilMoisture}%` : '',
     },
     {
       key: 'airTemperature',
       label: 'Temp. aire',
-      render: (row) => `${readValue(row, ['airTemperature', 'air_temperature', 'temperature'])} C`,
+      render: (row) => row.airTemperature != null ? `${row.airTemperature} C` : '',
     },
     {
       key: 'waterLevel',
       label: 'Nivel agua',
-      render: (row) => `${readValue(row, ['waterLevel', 'water_level', 'tank_level'])}%`,
+      render: (row) => row.waterLevel || '',
     },
   ]
 
@@ -95,19 +94,21 @@ function History() {
 
       {!loading && !error && history.length > 0 ? (
         <>
-          <SectionCard title="Humedad del suelo" description="Ultimas lecturas disponibles para el dispositivo.">
-            <div className="chart-box">
-              <ResponsiveContainer width="100%" height={320}>
-                <LineChart data={chartData} margin={{ top: 10, right: 16, left: -12, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#dfe6eb" />
-                  <XAxis dataKey="time" stroke="#597487" tickLine={false} />
-                  <YAxis stroke="#597487" tickLine={false} axisLine={false} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="humedad" stroke="#1E8449" strokeWidth={3} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </SectionCard>
+          {chartData.length > 0 ? (
+            <SectionCard title="Humedad del suelo" description="Ultimas lecturas disponibles para el dispositivo.">
+              <div className="chart-box">
+                <ResponsiveContainer width="100%" height={320}>
+                  <LineChart data={chartData} margin={{ top: 10, right: 16, left: -12, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#dfe6eb" />
+                    <XAxis dataKey="time" stroke="#597487" tickLine={false} />
+                    <YAxis stroke="#597487" tickLine={false} axisLine={false} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="humedad" stroke="#1E8449" strokeWidth={3} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </SectionCard>
+          ) : null}
 
           <SectionCard title="Detalle de lecturas">
             <DataTable columns={columns} rows={history} />

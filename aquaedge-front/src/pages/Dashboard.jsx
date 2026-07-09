@@ -18,11 +18,11 @@ import { getLatestTelemetry } from '../api/telemetryApi'
 import MetricCard from '../components/MetricCard'
 import SectionCard from '../components/SectionCard'
 import StatusBadge from '../components/StatusBadge'
-import { formatDate, readValue, toArray } from '../utils/collections'
+import { formatDate, toArray } from '../utils/collections'
 import { getApiErrorMessage } from '../utils/apiResponse'
 
 function isOpenAlert(alert) {
-  return !(alert.resolvedAt || alert.resolved_at || alert.isResolved)
+  return alert.status === 'open'
 }
 
 function Dashboard() {
@@ -102,7 +102,7 @@ function Dashboard() {
   const onlineDevices = devices.filter((device) => String(device.status).toUpperCase() === 'ONLINE')
   const offlineDevices = devices.filter((device) => String(device.status).toUpperCase() === 'OFFLINE')
   const openAlerts = alerts.filter(isOpenAlert)
-  const systemHealth = readValue(telemetry, ['systemHealth', 'system_health', 'status'])
+  const systemHealth = telemetry?.systemHealth
 
   return (
     <div className="page-stack">
@@ -155,34 +155,18 @@ function Dashboard() {
         ) : null}
         {!telemetryLoading && !telemetryError && telemetry ? (
           <div className="metrics-grid metrics-grid--compact">
-            <MetricCard
-              title="Humedad del suelo"
-              value={readValue(telemetry, ['soilMoisture', 'soil_moisture', 'soil_humidity'])}
-              unit="%"
-              icon={Droplet}
-              helper="Sensor de suelo"
-            />
-            <MetricCard
-              title="Fertilidad"
-              value={readValue(telemetry, ['soilFertility', 'soil_fertility', 'fertility'])}
-              unit="%"
-              icon={Gauge}
-              helper="Indice de nutrientes"
-            />
-            <MetricCard
-              title="Temperatura del aire"
-              value={readValue(telemetry, ['airTemperature', 'air_temperature', 'temperature'])}
-              unit="C"
-              icon={Thermometer}
-              helper="Ambiente"
-            />
-            <MetricCard
-              title="Humedad del aire"
-              value={readValue(telemetry, ['airHumidity', 'air_humidity', 'humidity'])}
-              unit="%"
-              icon={Waves}
-              helper="Ambiente"
-            />
+            {telemetry.soilMoisture != null ? (
+              <MetricCard title="Humedad del suelo" value={telemetry.soilMoisture} unit="%" icon={Droplet} />
+            ) : null}
+            {telemetry.soilFertility != null ? (
+              <MetricCard title="Fertilidad del suelo" value={telemetry.soilFertility} icon={Gauge} />
+            ) : null}
+            {telemetry.airTemperature != null ? (
+              <MetricCard title="Temperatura del aire" value={telemetry.airTemperature} unit="C" icon={Thermometer} />
+            ) : null}
+            {telemetry.airHumidity != null ? (
+              <MetricCard title="Humedad del aire" value={telemetry.airHumidity} unit="%" icon={Waves} />
+            ) : null}
           </div>
         ) : null}
       </SectionCard>
@@ -208,9 +192,9 @@ function Dashboard() {
         {telemetry ? (
           <div className="info-strip">
             <span>Dispositivo</span>
-            <strong>{readValue(telemetry, ['deviceId', 'device_id', 'device'])}</strong>
+            <strong>{telemetry.deviceId}</strong>
             <span>Fecha</span>
-            <strong>{formatDate(readValue(telemetry, ['createdAt', 'created_at', 'timestamp'], ''))}</strong>
+            <strong>{formatDate(telemetry.createdAt)}</strong>
           </div>
         ) : (
           <div className="state-inline">No hay datos disponibles.</div>

@@ -2,7 +2,6 @@ import SectionCard from '../components/SectionCard'
 import StatusBadge from '../components/StatusBadge'
 import { useAuth } from '../contexts/useAuth'
 import { getUserRoles } from '../utils/authRoles'
-import { readValue } from '../utils/collections'
 
 function Profile() {
   const { user } = useAuth()
@@ -20,14 +19,14 @@ function Profile() {
       <SectionCard title="Informacion de usuario" description="Datos de sesion provistos por backend-api.">
         <div className="info-strip">
           <span>Nombre</span>
-          <strong>{readValue(user, ['name', 'fullName', 'full_name'])}</strong>
+          <strong>{user.profile?.fullName}</strong>
           <span>Email</span>
-          <strong>{readValue(user, ['email'])}</strong>
+          <strong>{user.email}</strong>
           <span>Roles</span>
-          <strong>{roles.length > 0 ? roles.join(', ') : '--'}</strong>
+          <strong>{roles.join(', ')}</strong>
           <span>Estado</span>
           <strong>
-            <StatusBadge status={readValue(user, ['status'], 'ACTIVE')} />
+            <StatusBadge status={user.isActive ? 'ACTIVE' : 'INACTIVE'} />
           </strong>
         </div>
       </SectionCard>

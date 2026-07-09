@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react'
 import { getAlerts, resolveAlert } from '../api/alertApi'
 import SectionCard from '../components/SectionCard'
 import StatusBadge from '../components/StatusBadge'
-import { formatDate, readValue, toArray } from '../utils/collections'
+import { formatDate, toArray } from '../utils/collections'
 import { getApiErrorMessage } from '../utils/apiResponse'
 
 function Alerts() {
@@ -67,17 +67,13 @@ function Alerts() {
         {!loading && !error && alerts.length > 0 ? (
           <div className="alert-list">
             {alerts.map((alert) => {
-              const id = readValue(alert, ['id', 'alertId', 'alert_id'], '')
-              const status = readValue(alert, ['status', 'severity', 'level'], 'ALERTA')
-              const title = readValue(alert, ['title', 'type', 'name'], 'Alerta del sistema')
-              const message = readValue(alert, ['message', 'description', 'detail'], 'Sin detalle')
-              const createdAt = readValue(alert, ['createdAt', 'created_at', 'timestamp'], '')
-              const resolved = Boolean(alert.resolvedAt || alert.resolved_at || alert.isResolved)
+              const { id, status, severity, title, message, createdAt } = alert
+              const resolved = status === 'resolved'
 
               return (
                 <article className="alert-item" key={id || `${title}-${createdAt}`}>
                   <span className="alert-item__icon">
-                    {String(status).toUpperCase() === 'CRITICO' ? (
+                    {severity === 'CRITICAL' ? (
                       <ShieldAlert size={20} />
                     ) : (
                       <AlertTriangle size={20} />
@@ -86,7 +82,7 @@ function Alerts() {
                   <div>
                     <div className="alert-item__header">
                       <h3>{title}</h3>
-                      <StatusBadge status={resolved ? 'RESOLVED' : status} />
+                      <StatusBadge status={resolved ? status : severity} />
                     </div>
                     <p>{message}</p>
                     <small>{formatDate(createdAt)}</small>

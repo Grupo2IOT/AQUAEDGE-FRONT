@@ -5,11 +5,11 @@ import { getDevices } from '../api/deviceApi'
 import DataTable from '../components/DataTable'
 import SectionCard from '../components/SectionCard'
 import StatusBadge from '../components/StatusBadge'
-import { formatDate, readValue, toArray } from '../utils/collections'
+import { formatDate, toArray } from '../utils/collections'
 import { getApiErrorMessage } from '../utils/apiResponse'
 
 function getDeviceId(device) {
-  return readValue(device, ['id', 'deviceId', 'device_id'], '')
+  return device.id
 }
 
 function Irrigation() {
@@ -92,14 +92,14 @@ function Irrigation() {
   }
 
   const commandColumns = [
-    { key: 'deviceId', label: 'Dispositivo', render: (row) => readValue(row, ['deviceId', 'device_id']) },
+    { key: 'deviceId', label: 'Dispositivo' },
     { key: 'target', label: 'Target' },
     { key: 'state', label: 'Estado', render: (row) => <StatusBadge status={row.state} /> },
     { key: 'status', label: 'Proceso', render: (row) => <StatusBadge status={row.status} /> },
     {
       key: 'createdAt',
       label: 'Fecha',
-      render: (row) => formatDate(readValue(row, ['createdAt', 'created_at'], '')),
+      render: (row) => formatDate(row.createdAt),
     },
   ]
 
@@ -146,10 +146,9 @@ function Irrigation() {
             >
               {devices.map((device) => {
                 const deviceId = getDeviceId(device)
-                const name = readValue(device, ['name', 'deviceName', 'device_name'], deviceId)
                 return (
                   <option key={deviceId} value={deviceId}>
-                    {name} - {deviceId}
+                    {device.deviceName} - {deviceId}
                   </option>
                 )
               })}

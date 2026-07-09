@@ -10,7 +10,7 @@ import { getPlots } from '../api/plotApi'
 import DataTable from '../components/DataTable'
 import SectionCard from '../components/SectionCard'
 import StatusBadge from '../components/StatusBadge'
-import { formatDate, readValue, toArray } from '../utils/collections'
+import { formatDate, toArray } from '../utils/collections'
 import { getApiErrorMessage } from '../utils/apiResponse'
 
 const emptyForm = {
@@ -22,21 +22,16 @@ const emptyForm = {
 }
 
 function getRuleId(rule) {
-  return readValue(rule, ['id', 'ruleId', 'rule_id'], '')
+  return rule.id
 }
 
 function mapRuleToForm(rule) {
   return {
-    plotId: readValue(rule, ['plotId', 'plot_id', 'plot'], ''),
-    minSoilMoisture: readValue(rule, ['minSoilMoisture', 'min_soil_moisture', 'minMoisture'], ''),
-    maxSoilMoisture: readValue(rule, ['maxSoilMoisture', 'max_soil_moisture', 'maxMoisture'], ''),
-    autoIrrigationEnabled: Boolean(
-      rule.autoIrrigationEnabled ??
-        rule.auto_irrigation_enabled ??
-        rule.automaticIrrigationEnabled ??
-        rule.enabled,
-    ),
-    readingIntervalSec: readValue(rule, ['readingIntervalSec', 'reading_interval_sec', 'readingInterval'], ''),
+    plotId: rule.plotId,
+    minSoilMoisture: rule.minSoilMoisture,
+    maxSoilMoisture: rule.maxSoilMoisture,
+    autoIrrigationEnabled: rule.autoIrrigationEnabled,
+    readingIntervalSec: rule.readingIntervalSec,
   }
 }
 
@@ -71,11 +66,11 @@ function validateForm(form) {
 }
 
 function getPlotId(plot) {
-  return readValue(plot, ['id', 'plotId', 'plot_id'], '')
+  return plot.id
 }
 
 function getPlotName(plot) {
-  return readValue(plot, ['name', 'plotName', 'plot_name'], getPlotId(plot))
+  return plot.name
 }
 
 function Settings() {
@@ -206,12 +201,9 @@ function Settings() {
   }
 
   function getRulePlotLabel(rule) {
-    const plotValue = readValue(rule, ['plot'], null)
-    if (plotValue && typeof plotValue === 'object') return getPlotName(plotValue)
-
-    const plotId = readValue(rule, ['plotId', 'plot_id'], '')
-    const plot = plots.find((item) => getPlotId(item) === plotId)
-    return plot ? getPlotName(plot) : plotId || '--'
+    if (rule.plot) return getPlotName(rule.plot)
+    const plot = plots.find((item) => item.id === rule.plotId)
+    return plot?.name || ''
   }
 
   const columns = [
@@ -223,37 +215,29 @@ function Settings() {
     {
       key: 'minMoisture',
       label: 'Humedad min.',
-      render: (row) => readValue(row, ['minSoilMoisture', 'min_soil_moisture', 'minMoisture']),
+      render: (row) => row.minSoilMoisture,
     },
     {
       key: 'maxMoisture',
       label: 'Humedad max.',
-      render: (row) => readValue(row, ['maxSoilMoisture', 'max_soil_moisture', 'maxMoisture']),
+      render: (row) => row.maxSoilMoisture,
     },
     {
       key: 'automaticIrrigationEnabled',
       label: 'Riego automatico',
       render: (row) => {
-        const enabled = Boolean(
-          row.automaticIrrigationEnabled ??
-            row.automatic_irrigation_enabled ??
-            row.autoIrrigationEnabled ??
-            row.auto_irrigation_enabled ??
-            row.autoIrrigation ??
-            row.enabled,
-        )
-        return <StatusBadge status={enabled ? 'ACTIVE' : 'OFF'} />
+        return <StatusBadge status={row.autoIrrigationEnabled ? 'ACTIVE' : 'OFF'} />
       },
     },
     {
       key: 'readingInterval',
       label: 'Intervalo',
-      render: (row) => readValue(row, ['readingIntervalSec', 'reading_interval_sec', 'readingInterval']),
+      render: (row) => row.readingIntervalSec,
     },
     {
       key: 'updatedAt',
       label: 'Actualizacion',
-      render: (row) => formatDate(readValue(row, ['updatedAt', 'updated_at'], '')),
+      render: (row) => formatDate(row.updatedAt),
     },
     {
       key: 'actions',

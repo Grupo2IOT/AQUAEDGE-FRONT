@@ -4,7 +4,7 @@ import { getUsers } from '../api/userApi'
 import DataTable from '../components/DataTable'
 import SectionCard from '../components/SectionCard'
 import StatusBadge from '../components/StatusBadge'
-import { readValue, toArray } from '../utils/collections'
+import { toArray } from '../utils/collections'
 import { getApiErrorMessage } from '../utils/apiResponse'
 
 function Users() {
@@ -40,17 +40,17 @@ function Users() {
   }, [])
 
   const columns = [
-    { key: 'name', label: 'Nombre', render: (row) => readValue(row, ['name', 'fullName', 'full_name']) },
+    { key: 'name', label: 'Nombre', render: (row) => row.profile?.fullName || '' },
     { key: 'email', label: 'Email' },
     {
       key: 'roles',
       label: 'Roles',
       render: (row) => {
         const rowRoles = toArray(row.roles)
-        return rowRoles.map((role) => role.name || role.roleName || role).join(', ') || '--'
+        return rowRoles.map((userRole) => userRole.role?.name).filter(Boolean).join(', ')
       },
     },
-    { key: 'status', label: 'Estado', render: (row) => <StatusBadge status={row.status || 'ACTIVE'} /> },
+    { key: 'isActive', label: 'Estado', render: (row) => <StatusBadge status={row.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
   ]
 
   return (

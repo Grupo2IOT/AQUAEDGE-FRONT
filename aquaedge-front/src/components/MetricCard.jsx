@@ -9,7 +9,7 @@ function MetricCard({ title, value, unit, icon: Icon, status, helper }) {
       </div>
       <p className="metric-card__title">{title}</p>
       <div className="metric-card__value">
-        <span>{value ?? '--'}</span>
+        <span>{value}</span>
         {unit ? <small>{unit}</small> : null}
       </div>
       {helper ? <p className="metric-card__helper">{helper}</p> : null}

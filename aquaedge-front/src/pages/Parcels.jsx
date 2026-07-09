@@ -8,7 +8,7 @@ import {
 } from '../api/plotApi'
 import DataTable from '../components/DataTable'
 import SectionCard from '../components/SectionCard'
-import { formatDate, readValue, toArray } from '../utils/collections'
+import { formatDate, toArray } from '../utils/collections'
 import { getApiErrorMessage } from '../utils/apiResponse'
 
 const emptyForm = {
@@ -19,15 +19,15 @@ const emptyForm = {
 }
 
 function getPlotId(plot) {
-  return readValue(plot, ['id', 'plotId', 'plot_id'], '')
+  return plot.id
 }
 
 function mapPlotToForm(plot) {
   return {
-    name: readValue(plot, ['name', 'plotName', 'plot_name'], ''),
-    location: readValue(plot, ['location', 'address', 'sector'], ''),
-    cropType: readValue(plot, ['cropType', 'crop_type', 'crop'], ''),
-    area: readValue(plot, ['area', 'size', 'hectares'], ''),
+    name: plot.name,
+    location: plot.location || '',
+    cropType: plot.cropType || '',
+    area: plot.area ?? '',
   }
 }
 
@@ -152,14 +152,14 @@ function Parcels() {
 
   const columns = [
     { key: 'id', label: 'Codigo', render: (row) => getPlotId(row) },
-    { key: 'name', label: 'Nombre', render: (row) => readValue(row, ['name', 'plotName', 'plot_name']) },
-    { key: 'location', label: 'Ubicacion', render: (row) => readValue(row, ['location', 'address', 'sector']) },
-    { key: 'cropType', label: 'Cultivo', render: (row) => readValue(row, ['cropType', 'crop_type', 'crop']) },
-    { key: 'area', label: 'Area', render: (row) => readValue(row, ['area', 'size', 'hectares']) },
+    { key: 'name', label: 'Nombre' },
+    { key: 'location', label: 'Ubicacion', render: (row) => row.location || '' },
+    { key: 'cropType', label: 'Cultivo', render: (row) => row.cropType || '' },
+    { key: 'area', label: 'Area', render: (row) => row.area ?? '' },
     {
       key: 'updatedAt',
       label: 'Actualizacion',
-      render: (row) => formatDate(readValue(row, ['updatedAt', 'updated_at'], '')),
+      render: (row) => formatDate(row.updatedAt),
     },
     {
       key: 'actions',

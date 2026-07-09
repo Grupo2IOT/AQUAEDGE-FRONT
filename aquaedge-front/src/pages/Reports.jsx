@@ -1,26 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Download, FileText, ShieldCheck, Waves } from 'lucide-react'
+import { FileText, ShieldCheck, Waves } from 'lucide-react'
 import {
   getAlertsReport,
   getEventsReport,
   getWaterUsageReport,
 } from '../api/reportApi'
-import SectionCard from '../components/SectionCard'
 import { getApiErrorMessage } from '../utils/apiResponse'
-
-function getReportItems(data, preferredKeys = []) {
-  if (Array.isArray(data)) return data
-
-  for (const key of preferredKeys) {
-    if (Array.isArray(data?.[key])) return data[key]
-  }
-
-  if (Array.isArray(data?.data)) return data.data
-  if (Array.isArray(data?.items)) return data.items
-  if (Array.isArray(data?.rows)) return data.rows
-  if (data && Object.keys(data).length > 0) return [data]
-  return []
-}
 
 function ReportPreview({
   title,
@@ -30,9 +15,8 @@ function ReportPreview({
   loading,
   error,
   emptyMessage = 'No hay datos disponibles.',
-  preferredKeys = [],
 }) {
-  const items = getReportItems(data, preferredKeys)
+  const items = Array.isArray(data) ? data : []
 
   return (
     <article className="report-card">
@@ -49,15 +33,6 @@ function ReportPreview({
       {!loading && !error && items.length > 0 ? (
         <pre className="json-preview">{JSON.stringify(data, null, 2)}</pre>
       ) : null}
-      <button
-        className="button button-secondary"
-        type="button"
-        disabled
-        title="Funcionalidad disponible en una próxima versión."
-      >
-        <Download size={16} />
-        Exportar
-      </button>
     </article>
   )
 }
@@ -127,7 +102,6 @@ function Reports() {
           data={reports.waterUsage}
           loading={loading}
           error={errors.waterUsage}
-          preferredKeys={['waterUsage', 'telemetry']}
         />
         <ReportPreview
           title="Reporte de eventos"
@@ -137,7 +111,6 @@ function Reports() {
           loading={loading}
           error={errors.events}
           emptyMessage="No existen eventos registrados."
-          preferredKeys={['events', 'irrigationEvents']}
         />
         <ReportPreview
           title="Reporte de alertas"
@@ -146,11 +119,8 @@ function Reports() {
           data={reports.alerts}
           loading={loading}
           error={errors.alerts}
-          preferredKeys={['alerts']}
         />
       </div>
-
-      <SectionCard title="Exportaciones" description="Las descargas no se simulan en esta version." />
     </div>
   )
 }
